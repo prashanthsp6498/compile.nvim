@@ -82,6 +82,15 @@ local function set_buffer_text(buf, lines)
   vim.bo[buf].modifiable = false
 end
 
+local function follow_output()
+  if not is_valid_win(state.win) or not is_valid_buf(state.buf) then
+    return
+  end
+
+  local line_count = math.max(1, vim.api.nvim_buf_line_count(state.buf))
+  pcall(vim.api.nvim_win_set_cursor, state.win, { line_count, 0 })
+end
+
 local function clear_buffer(buf)
   if not is_valid_buf(buf) then
     return
@@ -202,6 +211,7 @@ local function append_output(lines)
 
   vim.b[state.buf].compile_entries = entries
   set_buffer_text(state.buf, chunk)
+  follow_output()
 end
 
 local function append_header(command)
@@ -213,6 +223,7 @@ local function append_header(command)
     "",
   })
   vim.bo[state.buf].modifiable = false
+  follow_output()
 end
 
 local function stop_job()
@@ -311,6 +322,10 @@ function M.run(cmd)
         end
         local marker = code == 0 and "Compile finished successfully" or string.format("Compile exited with code %d", code)
         set_buffer_text(state.buf, { marker })
+        follow_output()
+        if code ~= 0 then
+          vim.notify(marker, vim.log.levels.ERROR)
+        end
       end)
     end,
   })

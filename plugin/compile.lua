@@ -7,3 +7,5 @@ end, {
   complete = "shellcmd",
   desc = "Run a shell command and show the output in a compile window",
 })
+
+vim.keymap.set("n", "<M-x>", ":Compile ")
