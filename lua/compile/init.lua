@@ -126,7 +126,7 @@ local function ensure_window()
   vim.wo[state.win].relativenumber = false
   vim.wo[state.win].signcolumn = "no"
   vim.wo[state.win].wrap = false
-  vim.wo[state.win].cursorline = true
+  vim.wo[state.win].cursorline = false 
   vim.wo[state.win].foldcolumn = "0"
   vim.wo[state.win].winfixheight = true
 
@@ -144,6 +144,7 @@ local function ensure_window()
       vim.api.nvim_win_close(state.win, true)
     end
   end, "Close compile window")
+  map("r", function() M.run(state.command) end, "re-run last command")
 
   map("+", function()
     if not is_valid_win(state.win) then
@@ -231,6 +232,23 @@ local function stop_job()
     pcall(vim.fn.jobstop, state.job)
   end
   state.job = nil
+end
+
+local function reset_state()
+  state.buf = nil
+  state.win = nil
+  state.job = nil
+  state.origin_win = nil
+  state.cwd = nil
+  state.command = nil
+end
+
+local function close_output_window()
+  if is_valid_win(state.win) then
+    pcall(vim.api.nvim_win_close, state.win, true)
+  elseif is_valid_buf(state.buf) then
+    pcall(vim.api.nvim_buf_delete, state.buf, { force = true })
+  end
 end
 
 local function sanitize_data(data)
@@ -336,6 +354,16 @@ function M.run(cmd)
   end
 
   state.job = job_id
+end
+
+
+function M.reload()
+  state.run_id = state.run_id + 1
+  stop_job()
+  close_output_window()
+  reset_state()
+  package.loaded["compile"] = nil
+  vim.notify("Compile plugin reloaded", vim.log.levels.INFO)
 end
 
 return M
