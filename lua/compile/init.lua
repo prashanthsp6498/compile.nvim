@@ -8,6 +8,8 @@ local state = {
   cwd = nil,
   command = nil,
   run_id = 0,
+  output = {},
+  code = -1
 }
 
 local function is_valid_win(win)
@@ -189,6 +191,12 @@ local function ensure_window()
   end, "Jump to compile target")
 end
 
+local function update_state(lines)
+    for _, line in ipairs(lines) do
+        table.insert(state.output, line)
+    end
+end
+
 local function append_output(lines)
   if not is_valid_buf(state.buf) then
     return
@@ -241,6 +249,8 @@ local function reset_state()
   state.origin_win = nil
   state.cwd = nil
   state.command = nil
+  state.output = nil
+  state.code = 0
 end
 
 local function close_output_window()
@@ -312,6 +322,7 @@ function M.run(cmd)
       end
       vim.schedule(function()
         if run_id == state.run_id then
+          update_state(lines)
           append_output(lines)
         end
       end)
@@ -326,6 +337,7 @@ function M.run(cmd)
       end
       vim.schedule(function()
         if run_id == state.run_id then
+          update_state(lines)
           append_output(lines)
         end
       end)
@@ -338,6 +350,7 @@ function M.run(cmd)
         if run_id ~= state.run_id or not is_valid_buf(state.buf) then
           return
         end
+        state.code = code
         local marker = code == 0 and "Compile finished successfully" or string.format("Compile exited with code %d", code)
         set_buffer_text(state.buf, { marker })
         follow_output()
@@ -364,6 +377,23 @@ function M.reload()
   reset_state()
   package.loaded["compile"] = nil
   vim.notify("Compile plugin reloaded", vim.log.levels.INFO)
+end
+
+function M.openLast()
+    if state.code == -1 then
+        vim.notify("No command executed previously.", vim.log.levels.INFO)
+        return
+    end
+    ensure_window()
+    append_header(state.command)
+    append_output(state.output)
+    local marker = state.code == 0 and "Compile finished successfully" or string.format("Compile exited with code %d", code)
+    set_buffer_text(state.buf, { marker })
+    follow_output()
+    if state.code ~= 0 then
+        vim.notify(marker, vim.log.levels.ERROR)
+    end
+
 end
 
 return M

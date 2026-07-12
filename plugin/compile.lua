@@ -19,3 +19,4 @@ end, {
 })
 
 vim.keymap.set("n", "<M-x>", ":Compile ")
+vim.keymap.set("n", "g>", function() get_compile().openLast() end)
