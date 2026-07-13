@@ -36,6 +36,7 @@ local function normalize_path(path, cwd)
     return path
   end
 
+  path = path:match("%a.*")
   if path:match("^%a:[/\\]") or path:sub(1, 1) == "/" then
     return path
   end
@@ -59,6 +60,16 @@ local function parse_location(line)
       lnum = tonumber(lnum),
       col = tonumber(col),
     }
+  end
+
+  file, lnum, col = line:match("^(.-):(%d+):(%d+)")
+
+  if file then
+      return {
+          file = file,
+          lnum = tonumber(lnum),
+          col = tonumber(col),
+      }
   end
 
   file, lnum = line:match("^(.-):(%d+):")
