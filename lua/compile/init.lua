@@ -272,6 +272,11 @@ local function close_output_window()
   end
 end
 
+local function get_completion_marker(code)
+    local marker = code == 0 and "Compilation finished at " .. os.date() or string.format("Compilation exited abnormally with code %d at " .. os.date(), code)
+    return { "", marker, "" }
+end
+
 local function sanitize_data(data)
   if not data or #data == 0 then
     return nil
@@ -362,8 +367,8 @@ function M.run(cmd)
           return
         end
         state.code = code
-        local marker = code == 0 and "Compile finished successfully" or string.format("Compile exited with code %d", code)
-        set_buffer_text(state.buf, { marker })
+        local marker = code == 0 and "Compile finished successfully at " .. os.date() or string.format("Compile exited with code %d at " .. os.date(), code)
+        set_buffer_text(state.buf, get_completion_marker(state.code))
         follow_output()
         if code ~= 0 then
           vim.notify(marker, vim.log.levels.ERROR)
@@ -398,8 +403,7 @@ function M.openLast()
     ensure_window()
     append_header(state.command)
     append_output(state.output)
-    local marker = state.code == 0 and "Compile finished successfully" or string.format("Compile exited with code %d", code)
-    set_buffer_text(state.buf, { marker })
+    set_buffer_text(state.buf, get_completion_marker(state.code))
     follow_output()
     if state.code ~= 0 then
         vim.notify(marker, vim.log.levels.ERROR)
