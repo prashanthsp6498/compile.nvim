@@ -5,8 +5,12 @@ An Emacs-style `compile` command for Neovim.
 ## What it does
 
 - Runs any shell command from `:Compile`
+- `<M-x>` key for shortcut.
+- Make use of vim wildcards like `:Compile git diff %`
 - Opens a transient bottom split for the output
 - Closes with `q`
+- Re-run the last command with `r` (works only if used inside compile buffer)
+- Reopen last executed buffer with `g>`
 - Resizes the output window with `+` and `-`
 - Jumps to source locations with `<CR>` on parsed error lines
 
