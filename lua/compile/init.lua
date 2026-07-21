@@ -314,6 +314,8 @@ function M.run(cmd)
         return
     end
 
+    command = vim.fn.expandcmd(command)
+
     state.origin_win = vim.api.nvim_get_current_win()
     state.cwd = vim.fn.getcwd()
     state.command = command
