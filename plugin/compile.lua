@@ -1,3 +1,15 @@
+local function completion(arglead, cmdline, cursorpos)
+    local before = cmdline:sub(1, cursorpos)
+    local parts = vim.split(before, "%s+")
+    local argn = #parts - 1
+
+    if argn == 1 then
+        return vim.fn.getcompletion(arglead, "shellcmd")
+    else
+        return vim.fn.getcompletion(arglead, "file")
+    end
+end
+
 local function get_compile()
     return require("compile")
 end
@@ -7,7 +19,7 @@ vim.api.nvim_create_user_command("Compile", function(opts)
 end, {
     force = true,
     nargs = "*",
-    complete = "shellcmd",
+    complete = completion,
     desc = "Run a shell command and show the output in a compile window",
 })
 
